@@ -78,7 +78,6 @@ const exportCSV=async()=>{
     }
   };
 
-
 // 계산
 const fr=(CAT+TIERS[ti].pay)/100;
 const mr=mg/100;
