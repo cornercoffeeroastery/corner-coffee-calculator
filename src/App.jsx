@@ -28,7 +28,7 @@ const T=dark?DK:LT;
 const [ti,setTi]=useState(()=>load(“ti”,0));
 const [mg,setMg]=useState(()=>load(“mg”,35));
 const [vt,setVt]=useState(()=>load(“vt”,false));
-
+    
 const [gb,setGb]=useState(()=>load(“gb”,15000));
 const [ro,setRo]=useState(()=>load(“ro”,3000));
 const [yr,setYr]=useState(()=>load(“yr”,80));
