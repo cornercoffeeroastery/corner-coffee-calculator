@@ -342,7 +342,6 @@ return (
     <div style={{fontSize:10,color:T.dim,marginTop:8,textAlign:"center"}}>앱을 닫아도 입력값이 자동 저장됩니다 ✓</div>
   </div>
 </div>
-```
 
 );
 }
