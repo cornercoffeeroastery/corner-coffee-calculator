@@ -178,7 +178,11 @@ export default function App(){
       </>}
 
       {tab===1&&<>
-        <div style={C()}><div style={ttl}>생두 블렌딩 구성</div>
+        <div style={C()}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <span style={{fontSize:10,letterSpacing:2,color:T.ac,textTransform:"uppercase"}}>생두 블렌딩 구성</span>
+            <button onClick={()=>{setBeans([{name:"",price:0,ratio:0},{name:"",price:0,ratio:0},{name:"",price:0,ratio:0},{name:"",price:0,ratio:0},{name:"",price:0,ratio:0}]);showToast("블렌딩 초기화 ✓");}} style={{padding:"6px 14px",borderRadius:8,border:"1px solid #f87171",background:"transparent",color:"#f87171",fontSize:12,cursor:"pointer"}}>초기화</button>
+          </div>
           <div style={{fontSize:11,color:T.sub,marginBottom:12}}>비율 합계: <span style={{color:tr===100?T.ac:"#f87171",fontFamily:"monospace",fontWeight:700}}>{tr}%</span>{tr!==100&&<span style={{color:"#f87171"}}> ← 100%여야 합니다</span>}</div>
           {beans.map((b,i)=>(
             <div key={i} style={{background:T.ip,border:`1px solid ${T.bdr}`,borderRadius:10,padding:"12px",marginBottom:10}}>
@@ -369,7 +373,7 @@ export default function App(){
         </div>}
       </>}
 
-      <div style={{...C(),marginTop:16}}>
+      {tab!==3&&<div style={{...C(),marginTop:16}}>
         <div style={ttl}>공통 설정</div>
         <div style={{fontSize:11,color:T.sub,marginBottom:8}}>네이버 수수료 구간</div>
         <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -381,7 +385,7 @@ export default function App(){
           <div style={tg(vt)}><div style={tb(vt)}/></div>
           <span style={{fontSize:13,color:T.tx2}}>{vt?"부가세 10% 포함":"부가세 미적용 (간이과세자)"}</span>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
