@@ -81,14 +81,55 @@ export default function App(){
   const removeSupplier=(i)=>setForm(p=>({...p,suppliers:p.suppliers.filter((_,idx)=>idx!==i)}));
   const deleteBean=i=>{setBeanDB(prev=>prev.filter((_,idx)=>idx!==i));showToast("삭제됨");};
 
-  const exportCSV=async()=>{
-    const rows=[["생두명","산지","가공방식","공급업체","가격(원/kg)","현재구매처","구매일","메모"]];
-    beanDB.forEach(b=>b.suppliers.forEach(s=>rows.push([b.name,b.origin,b.process,s.name,s.price,s.current?"Y":"",b.date,b.notes])));
+  const shareCSV=async(rows,fname,title)=>{
     const csv="\uFEFF"+rows.map(r=>r.map(v=>`"${v}"`).join(",")).join("\n");
     const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-    const fname=`cornerprice_생두DB_${new Date().toISOString().slice(0,10)}.csv`;
-    try{const file=new File([blob],fname,{type:"text/csv"});if(navigator.share&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"생두 DB"});return;}}catch{}
+    try{const file=new File([blob],fname,{type:"text/csv"});if(navigator.share&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return;}}catch{}
     const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
+  };
+
+  const exportCSV=()=>{
+    const rows=[["생두명","산지","가공방식","공급업체","가격(원/kg)","현재구매처","구매일","메모"]];
+    beanDB.forEach(b=>b.suppliers.forEach(s=>rows.push([b.name,b.origin,b.process,s.name,s.price,s.current?"Y":"",b.date,b.notes])));
+    shareCSV(rows,`cornerprice_생두DB_${new Date().toISOString().slice(0,10)}.csv`,"생두 DB");
+  };
+
+  const exportBeanCSV=()=>{
+    const date=new Date().toISOString().slice(0,10);
+    const rows=[["날짜","생두구매가(원/kg)","로스팅비(원/kg)","로스율(%)","판매단위","커피원가(원)","포장+배송(원)","수수료(원)","판매가(원)","이익(원)","이익률(%)"]];
+    UNITS.forEach(u=>{
+      const n=u/(yr/100);const gc2=(gb/1000)*n;const rc2=(ro/1000)*n;const cc2=gc2+rc2;
+      const tc2=cc2+pk+(fs?sh:0);const price=calc(tc2);
+      const fa2=price*fr;const va2=vt?Math.round(price/11):0;const pf2=price-fa2-va2-tc2;
+      const rm2=price>0?((pf2/price)*100).toFixed(1):0;
+      rows.push([date,gb,ro,yr,u>=1000?"1kg":`${u}g`,Math.round(cc2),pk+(fs?sh:0),Math.round(fa2),price,Math.round(pf2),rm2]);
+    });
+    shareCSV(rows,`cornerprice_원두_${date}.csv`,"원두 판매가");
+  };
+
+  const exportBlendCSV=()=>{
+    const date=new Date().toISOString().slice(0,10);
+    const rows=[["날짜","블렌딩단가(원/kg)","판매단위","커피원가(원)","포장+배송(원)","판매가(원)","이익률(%)"]];
+    [200,500,1000].forEach(u=>{
+      const cost=buc(u)+pk+(fs?sh:0);const price=calc(cost);
+      const p2=price-price*fr-(vt?Math.round(price/11):0)-cost;
+      const m2=price>0?((p2/price)*100).toFixed(1):0;
+      rows.push([date,Math.round(bkc),u>=1000?"1kg":`${u}g`,Math.round(buc(u)),pk+(fs?sh:0),price,m2]);
+    });
+    shareCSV(rows,`cornerprice_블렌딩_${date}.csv`,"블렌딩 판매가");
+  };
+
+  const exportDripCSV=()=>{
+    const date=new Date().toISOString().slice(0,10);
+    const rows=[["날짜","개입수","커피원가(원)","필터+봉투(원)","박스+기타(원)","판매가(원)","개당가격(원)","이익률(%)"]];
+    [8,10].forEach(n=>{
+      const nd=(dbCg*n)/(dlyr/100);const cc2=((dlgb+dlro)/1000)*nd;
+      const fc=dbFl*n;const bc=dbBg*n;const tc2=cc2+fc+bc+dbBx+dbPk+(dbFs?dbSh:0);
+      const price=calc(tc2);const p2=price-price*fr-(vt?Math.round(price/11):0)-tc2;
+      const m2=price>0?((p2/price)*100).toFixed(1):0;
+      rows.push([date,`${n}개입`,Math.round(cc2),Math.round(fc+bc),Math.round(dbBx+dbPk+(dbFs?dbSh:0)),price,Math.round(price/n),m2]);
+    });
+    shareCSV(rows,`cornerprice_드립백_${date}.csv`,"드립백 판매가");
   };
 
   const fr=(CAT+TIERS[ti].pay)/100;const mr=mg/100;const vf=vt?10/11:1;const dv=vf-fr-mr;
@@ -175,6 +216,7 @@ export default function App(){
             ))}
           </div>
         </div>
+        <button onClick={exportBeanCSV} style={{display:"block",width:"100%",maxWidth:560,margin:"12px auto 0",padding:"11px",borderRadius:10,border:`1px solid ${T.ac}`,background:"transparent",color:T.ac,fontSize:13,cursor:"pointer"}}>⬇ 원두 판매가 CSV</button>
       </>}
 
       {tab===1&&<>
@@ -207,7 +249,7 @@ export default function App(){
           <div style={{fontFamily:"monospace",fontSize:10,color:T.dim,marginBottom:14}}>생두 가중평균 단가</div>
           {sp2}
           <div style={{fontSize:10,letterSpacing:2,color:T.ac,textTransform:"uppercase",margin:"14px 0 10px"}}>단위별 판매가</div>
-          {tr===100?[500,1000].map(u=>{
+          {tr===100?[200,500,1000].map(u=>{
             const cost=buc(u)+pk+(fs?sh:0);const price=calc(cost);
             const p2=price-price*fr-(vt?Math.round(price/11):0)-cost;const m2=price>0?(p2/price)*100:0;
             return <div key={u} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${T.bdr}`}}>
@@ -217,6 +259,7 @@ export default function App(){
           }):<div style={{color:"#f87171",fontSize:12}}>비율 합계를 100%로 맞춰주세요</div>}
         </div>
       </>}
+        {tr===100&&<button onClick={exportBlendCSV} style={{display:"block",width:"100%",maxWidth:560,margin:"12px auto 0",padding:"11px",borderRadius:10,border:`1px solid ${T.ac}`,background:"transparent",color:T.ac,fontSize:13,cursor:"pointer"}}>⬇ 블렌딩 판매가 CSV</button>}
 
       {tab===2&&<>
         <div style={C()}><div style={ttl}>원두 원가 소스</div>
@@ -272,6 +315,7 @@ export default function App(){
             </div>);
           })}
         </div>
+        <button onClick={exportDripCSV} style={{display:"block",width:"100%",maxWidth:560,margin:"12px auto 0",padding:"11px",borderRadius:10,border:`1px solid ${T.ac}`,background:"transparent",color:T.ac,fontSize:13,cursor:"pointer"}}>⬇ 드립백 판매가 CSV</button>
       </>}
 
       {tab===3&&<>
