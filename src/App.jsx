@@ -258,8 +258,8 @@ export default function App(){
             </div>
           }):<div style={{color:"#f87171",fontSize:12}}>비율 합계를 100%로 맞춰주세요</div>}
         </div>
-      </>}
         {tr===100&&<button onClick={exportBlendCSV} style={{display:"block",width:"100%",maxWidth:560,margin:"12px auto 0",padding:"11px",borderRadius:10,border:`1px solid ${T.ac}`,background:"transparent",color:T.ac,fontSize:13,cursor:"pointer"}}>⬇ 블렌딩 판매가 CSV</button>}
+      </>}
 
       {tab===2&&<>
         <div style={C()}><div style={ttl}>원두 원가 소스</div>
